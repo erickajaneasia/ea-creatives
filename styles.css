@@ -2754,24 +2754,21 @@ img {
 ===================================================== */
 @media (max-width:760px){
   html{scroll-snap-type:none;}
-  section{scroll-snap-align:none;scroll-snap-stop:normal;height:auto;min-height:auto;max-height:none;padding:55px 24px;}
+  section{scroll-snap-align:none;scroll-snap-stop:normal;height:auto;min-height:100svh;max-height:none;}
 
   .description{font-size:1rem;line-height:1.75;}
   .hero-subtitle{font-size:1rem;}
   .project-description{font-size:.9rem;line-height:1.6;}
   .fun-fact{font-size:.9rem;line-height:1.65;}
 
-  /* Keep the hero illustrations fully visible. Only the requested
-     section illustrations are softened on mobile. */
-  #about .section-illustration{opacity:.6;}
-  #services .services-flow-art{opacity:.6;}
-  #projects .section-illustration{opacity:.6;}
+  /* Keep hero illustrations fully visible. Only the requested section art is dimmed. */
+  #about .section-illustration,
+  #services .services-art,
+  #projects .section-illustration,
   #contact .section-illustration{opacity:.6;}
 
   .about-grid{display:block;}
-  .about-content{position:relative;padding-top:96px;}
-  .about-content h2{position:absolute;top:0;left:0;width:100%;margin:0;z-index:2;}
-  .profile-container{float:left;width:122px;max-width:122px;margin:96px 18px 10px 0;}
+  .profile-container{float:left;width:122px;max-width:122px;margin:0 18px 10px 0;}
   .profile-frame{width:fit-content;max-width:100%;}
   .profile-frame img{max-width:100%;max-height:250px;}
   .profile-secondary{width:58px;max-width:58px;right:-10px;bottom:22px;}
@@ -2800,4 +2797,94 @@ img {
   .project-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px 4px;overscroll-behavior:contain;}
   .project-gallery-card img{max-height:none;}
   .scroll-hint{display:none;}
+}
+
+
+/* =====================================================
+   MOBILE / CAROUSEL PRECISION REFINEMENTS
+===================================================== */
+.about-mobile-heading{display:none;}
+
+/* Keep the project image and its border/frame as one moving unit. */
+.project-card img{
+  animation:none;
+  transform:none;
+}
+.project-card{
+  animation:projectCardFloat 6.5s ease-in-out infinite;
+  margin-top:0;
+}
+@keyframes projectCardFloat{
+  0%,100%{margin-top:0;}
+  50%{margin-top:-4px;}
+}
+
+/* The text labels must sit in front of the hero studio illustration. */
+.hero-visual .floating-card.one,
+.hero-visual .floating-card.two{
+  z-index:12;
+}
+
+@media (max-width:760px){
+  /* Tighter section rhythm without forcing short sections to fill a viewport. */
+  section{
+    min-height:0;
+    padding:56px 24px;
+  }
+
+  /* Mobile-only heading: it sits above the portrait, while the body copy
+     remains in the same float context so the text wraps around the image. */
+  .about-mobile-heading{
+    display:block;
+    position:relative;
+    z-index:4;
+    margin-bottom:24px;
+  }
+  .about-mobile-heading h2{
+    margin:0;
+  }
+  .about-mobile-heading .section-number{
+    margin-bottom:10px;
+  }
+
+  .about-content{
+    display:contents;
+  }
+  .about-content > .section-number,
+  .about-content > h2{
+    display:none;
+  }
+  .about-description{
+    display:contents;
+  }
+  .about-description .description{
+    display:block;
+    margin-top:0;
+    margin-bottom:18px;
+    text-align:justify;
+  }
+  .about-tags,
+  .fun-fact{
+    clear:both;
+  }
+
+  /* Give the portrait a little breathing room below the heading so it can
+     never sit underneath the heading at narrow widths. */
+  .profile-container{
+    margin-top:8px;
+    margin-right:18px;
+    margin-bottom:12px;
+  }
+
+  /* Keep the hero labels in front of the studio, and give them more visual separation. */
+  .hero-visual .floating-card.one{
+    top:21%;
+    right:-2%;
+    z-index:12;
+  }
+  .hero-visual .floating-card.two{
+    bottom:20%;
+    left:-2%;
+    z-index:12;
+  }
 }
