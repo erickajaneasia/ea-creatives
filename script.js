@@ -263,6 +263,14 @@
     const tabs =
       document.querySelectorAll(".project-tab");
 
+    const galleryToggle =
+      document.getElementById("galleryToggle");
+
+    const projectsLayout =
+      document.querySelector(".projects-layout");
+
+    let galleryMode = false;
+
 
 
     /* ==========================================
@@ -271,47 +279,68 @@
 
     function renderProjects() {
 
-      const categoryProjects =
-        projects[currentCategory];
+      const categoryProjects = projects[currentCategory] || [];
+      if (!categoryProjects.length) return;
 
-      /* Build the cards only when the category changes or on first load.
-         After that, keep the same DOM nodes so CSS transitions can animate
-         the cards smoothly from one carousel position to the next. */
+      if (galleryMode) {
+        carousel.dataset.category = currentCategory;
+        carousel.classList.add("project-gallery");
+        carousel.innerHTML = "";
+
+        categoryProjects.forEach((project, index) => {
+          const card = document.createElement("div");
+          card.classList.add("project-gallery-card");
+          card.tabIndex = 0;
+          card.dataset.projectIndex = index;
+          card.innerHTML = `<img src="${project.image}" alt="${project.title}" loading="lazy">`;
+
+          const open = () => openImageModal(project.image, project.title);
+          card.addEventListener("click", open);
+          card.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              open();
+            }
+          });
+
+          carousel.appendChild(card);
+        });
+
+        projectTitle.textContent = "GALLERY MODE";
+        projectDescription.textContent =
+          `${categoryProjects.length} sample work${categoryProjects.length === 1 ? "" : "s"} in ${currentCategory.toUpperCase()}.`;
+        projectCounter.textContent =
+          `${String(categoryProjects.length).padStart(2, "0")} / ${String(categoryProjects.length).padStart(2, "0")}`;
+        return;
+      }
+
+      carousel.classList.remove("project-gallery");
+
       const needsRebuild =
         carousel.dataset.category !== currentCategory ||
-        carousel.children.length !== categoryProjects.length;
+        carousel.children.length !== categoryProjects.length ||
+        carousel.querySelector(".project-gallery-card");
 
       if (needsRebuild) {
-
         carousel.innerHTML = "";
         carousel.dataset.category = currentCategory;
 
         categoryProjects.forEach((project, index) => {
-
           const card = document.createElement("div");
-
           card.classList.add("project-card");
-
-          card.innerHTML = `
-            <img
-              src="${project.image}"
-              alt="${project.title}"
-            >
-          `;
+          card.innerHTML = `<img src="${project.image}" alt="${project.title}">`;
 
           const projectImage = card.querySelector("img");
 
           projectImage.addEventListener("error", () => {
-            if (project.fallbackImage && projectImage.src !== new URL(project.fallbackImage, window.location.href).href) {
+            if (project.fallbackImage &&
+                projectImage.src !== new URL(project.fallbackImage, window.location.href).href) {
               projectImage.src = project.fallbackImage;
             }
           }, { once: true });
 
-          projectImage.addEventListener("click", (event) => {
+          projectImage.addEventListener("click", event => {
             event.stopPropagation();
-
-            // Only the active project opens the full-size viewer.
-            // Clicking an inactive project simply makes it active.
             if (card.classList.contains("active")) {
               openImageModal(project.image, project.title);
             } else {
@@ -321,78 +350,43 @@
           });
 
           card.dataset.projectIndex = index;
-
           card.addEventListener("click", () => {
             currentIndex = index;
             renderProjects();
           });
 
           carousel.appendChild(card);
-
         });
       }
 
       const previousIndex =
         (currentIndex - 1 + categoryProjects.length) % categoryProjects.length;
-
       const nextIndex =
         (currentIndex + 1) % categoryProjects.length;
-
       const previousFarIndex =
         (currentIndex - 2 + categoryProjects.length) % categoryProjects.length;
-
       const nextFarIndex =
         (currentIndex + 2) % categoryProjects.length;
 
-      /* Reassign positions only. Because the elements are persistent,
-         the existing transform transition creates the smooth scroll. */
       Array.from(carousel.children).forEach((card, index) => {
-
         card.classList.remove(
-          "active",
-          "prev",
-          "next",
-          "prev-far",
-          "next-far",
-          "hidden-left",
-          "hidden-right"
+          "active","prev","next","prev-far","next-far","hidden-left","hidden-right"
         );
 
-        if (index === currentIndex) {
-          card.classList.add("active");
-        }
-        else if (index === previousIndex) {
-          card.classList.add("prev");
-        }
-        else if (index === nextIndex) {
-          card.classList.add("next");
-        }
-        else if (categoryProjects.length > 4 && index === previousFarIndex) {
-          card.classList.add("prev-far");
-        }
-        else if (categoryProjects.length > 4 && index === nextFarIndex) {
-          card.classList.add("next-far");
-        }
-        else if (index < currentIndex) {
-          card.classList.add("hidden-left");
-        }
-        else {
-          card.classList.add("hidden-right");
-        }
+        if (index === currentIndex) card.classList.add("active");
+        else if (index === previousIndex) card.classList.add("prev");
+        else if (index === nextIndex) card.classList.add("next");
+        else if (categoryProjects.length > 4 && index === previousFarIndex) card.classList.add("prev-far");
+        else if (categoryProjects.length > 4 && index === nextFarIndex) card.classList.add("next-far");
+        else if (index < currentIndex) card.classList.add("hidden-left");
+        else card.classList.add("hidden-right");
       });
 
-      /* ACTIVE PROJECT INFO */
       const activeProject = categoryProjects[currentIndex];
-
       projectTitle.textContent = activeProject.title;
-
-      projectDescription.textContent =
-        activeProject.description;
-
+      projectDescription.textContent = activeProject.description;
       projectCounter.textContent =
-        `${String(currentIndex + 1).padStart(2, "0")}
-        /
-        ${String(categoryProjects.length).padStart(2, "0")}`;
+        `${String(currentIndex + 1).padStart(2, "0")} / ${String(categoryProjects.length).padStart(2, "0")}`;
     }
 
 
@@ -475,6 +469,94 @@
 
 
     /* ==========================================
+       CAROUSEL / GALLERY MODE TOGGLE
+    ========================================== */
+
+    galleryToggle?.addEventListener("click", () => {
+      galleryMode = !galleryMode;
+
+      projectsLayout?.classList.toggle("gallery-active", galleryMode);
+
+      if (galleryToggle) {
+        galleryToggle.textContent =
+          galleryMode ? "VIEW CAROUSEL MODE" : "VIEW GALLERY MODE";
+        galleryToggle.setAttribute("aria-pressed", String(galleryMode));
+      }
+
+      renderProjects();
+    });
+
+
+    /* ==========================================
+       PROJECT TOUCH SWIPE
+       Horizontal swipes navigate the carousel on mobile.
+    ========================================== */
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+    let ignoreNextClick = false;
+
+    carousel.addEventListener("touchstart", event => {
+      if (galleryMode || !event.touches.length) return;
+
+      const touch = event.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchMoved = false;
+    }, { passive: true });
+
+    carousel.addEventListener("touchmove", event => {
+      if (galleryMode || !event.touches.length) return;
+
+      const touch = event.touches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+
+      if (Math.abs(dx) > 10) touchMoved = true;
+
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    carousel.addEventListener("touchend", event => {
+      if (galleryMode || !touchMoved || !event.changedTouches.length) return;
+
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+
+      if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy) || projectScrolling) return;
+
+      const categoryProjects = projects[currentCategory] || [];
+      if (!categoryProjects.length) return;
+
+      projectScrolling = true;
+      ignoreNextClick = true;
+
+      if (dx < 0) {
+        currentIndex = (currentIndex + 1) % categoryProjects.length;
+      } else {
+        currentIndex = (currentIndex - 1 + categoryProjects.length) % categoryProjects.length;
+      }
+
+      renderProjects();
+
+      setTimeout(() => { projectScrolling = false; }, 900);
+      setTimeout(() => { ignoreNextClick = false; }, 120);
+    }, { passive: true });
+
+    carousel.addEventListener("click", event => {
+      if (ignoreNextClick) {
+        event.preventDefault();
+        event.stopPropagation();
+        ignoreNextClick = false;
+      }
+    }, true);
+
+
+    /* ==========================================
        PROJECT SCROLL
 
        This only activates when
@@ -485,6 +567,8 @@
       "wheel",
 
       (event) => {
+
+        if (galleryMode) return;
 
         event.preventDefault();
 
