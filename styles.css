@@ -2920,3 +2920,24 @@ img {
     flex:0 0 auto;
   }
 }
+
+/* =====================================================
+   MOBILE — DISABLE SECTION SCROLL/ENTRANCE ANIMATIONS
+   Keep the mobile page immediate and responsive. Desktop is unchanged.
+===================================================== */
+@media (max-width:760px){
+  html{
+    scroll-behavior:auto;
+  }
+
+  .section-reveal-target,
+  .section-reveal-target.section-revealed{
+    opacity:1 !important;
+    transform:none !important;
+    filter:none !important;
+    transition:none !important;
+    transition-delay:0ms !important;
+    animation-play-state:running !important;
+    will-change:auto;
+  }
+}
