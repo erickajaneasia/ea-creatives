@@ -308,7 +308,7 @@
 
         projectTitle.textContent = `SAMPLE WORKS GALLERY (${currentCategory.toUpperCase()})`;
         projectDescription.textContent =
-          `${categoryProjects.length} sample work${categoryProjects.length === 1 ? "" : "s"} under ${currentCategory} category.`;;
+          `${categoryProjects.length} sample work${categoryProjects.length === 1 ? "" : "s"} under ${currentCategory} category.`;
         projectCounter.textContent =
           `${String(categoryProjects.length).padStart(2, "0")} / ${String(categoryProjects.length).padStart(2, "0")}`;
         return;
